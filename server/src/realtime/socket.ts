@@ -38,23 +38,8 @@ export function installSockets(server: Server): void {
     if (user.role === 'ADMIN') {
       socket.join('admins');
     }
-    // Every user gets a private room for targeted notifications
+    // Every user gets a private room for targeted notifications and assigned-task activity
     socket.join(`user:${user.id}`);
-
-    // DEVELOPER: auto-join the project rooms for all their assigned tasks
-    if (user.role === 'DEVELOPER') {
-      const assignedProjectIds = await prisma.task
-        .findMany({
-          where: { assignedDeveloperId: user.id },
-          select: { projectId: true },
-          distinct: ['projectId'],
-        })
-        .then((rows) => rows.map((r) => r.projectId));
-
-      for (const projectId of assignedProjectIds) {
-        socket.join(`project:${projectId}`);
-      }
-    }
 
     // ── Missed-event replay ──────────────────────────────────────────────────
     // Deliver the last 20 relevant activity events the user may have missed
