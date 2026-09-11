@@ -1,0 +1,3 @@
+import { StrictMode } from 'react'; import { createRoot } from 'react-dom/client'; import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'; import { AuthProvider, useAuth } from './auth/AuthContext'; import { LoginPage } from './pages/LoginPage'; import { DashboardPage } from './pages/DashboardPage'; import './styles.css';
+function Guard(){const{user}=useAuth();return user?<DashboardPage/>:<Navigate to="/login" replace/>} createRoot(document.getElementById('root')!).render(<StrictMode><BrowserRouter><AuthProvider><Routes><Route path="/login" element={<LoginPage/>}/><Route path="/" element={<Guard/>}/></Routes></AuthProvider></BrowserRouter></StrictMode>);
+
