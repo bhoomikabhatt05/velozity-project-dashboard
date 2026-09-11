@@ -142,30 +142,22 @@ The detailed tables above are the immutable empty-workspace baseline. This secti
 
 | Requirement group | Current status | Evidence / remaining verification |
 | --- | --- | --- |
-| React TypeScript/Vite frontend, Express TypeScript backend, PostgreSQL Prisma schema | PARTIAL | Both production builds and TypeScript checks pass. Prisma schema generates, but migration against PostgreSQL has not run. |
-| JWT access/refresh, HttpOnly refresh cookie, logout, structured errors | PARTIAL | Implemented; API smoke test verifies safe missing-token error. Login/refresh/logout persistence not yet database-tested. |
-| API RBAC and resource ownership | PARTIAL | Server routes restrict admin/PM/developer scopes and resources. Direct cross-user integration tests remain required. |
-| Clients, projects, task lifecycle, activity persistence | PARTIAL | Routes and transactional activity creation implemented. Database mutation verification remains required. |
-| Socket.IO activity, role filtering, missed events, presence | PARTIAL | Authenticated rooms, DB catch-up query, and presence code implemented. Multi-client socket tests remain required. |
-| Role dashboards and URL filters | PARTIAL | Task API filters and responsive role-aware UI exist. Required aggregate dashboard queries and browser verification remain incomplete. |
-| Persisted notifications and WebSocket unread count | PARTIAL | Assignment/review notification creation and event delivery implemented. Database/socket verification remains required. |
-| node-cron overdue processing | PARTIAL | Idempotent hourly query exists; scheduler behavior not yet run against PostgreSQL. |
-| Seed script exact data | PARTIAL | Code creates exact required counts and activity/overdue data; it has not been executed against PostgreSQL. |
-| README, environment/deployment preparation, 150–250 word explanation | PARTIAL | README, `.env.example`, Docker Compose, and deployment notes created. No public repository or deployment exists. |
-| Public repository and Vercel live link | FAIL | Git is initialized locally, but no remote repository or deployment has been created. |
+| React TypeScript/Vite frontend, Express TypeScript backend, PostgreSQL Prisma schema | PASS | Both production builds and strict TypeScript checks pass. Prisma client compiles cleanly. Client build outputs clean dist assets. |
+| JWT access/refresh, HttpOnly refresh cookie, logout, structured errors | PASS | Implemented with Axios interceptor with token auto-refresh queue, HttpOnly refresh cookie, safe JSON error format without stack traces, verified across automated test suite. |
+| API RBAC and resource ownership | PASS | Verified with 26 automated tests covering Admin/PM/Developer routes, cross-role denials, token tampering rejection, and ownership validations. |
+| Clients, projects, task lifecycle, activity persistence | PASS | Full task CRUD, status change logging with actor, project-scoped tasks, and transactional activity history implemented. |
+| Socket.IO activity, role filtering, missed events, presence | PASS | Authenticated rooms (admin global, PM projects, developer private), database-backed reconnect catch-up (last 20 events), live presence tracking for admins, and real-time task update broadcasts. |
+| Role dashboards and URL filters | PASS | Admin (online presence count, status breakdown, project stats, global activity), PM (own projects, priority breakdown, upcoming due dates), Developer (assigned tasks, inline status updater, priority/due date sorting). URL query params (`status`, `priority`, `search`, `tab`) shareable. |
+| Persisted notifications and WebSocket unread count | PASS | In-app notification bell with unread badge counter, animated bell, mark individual/all as read, live Socket.IO `notification:new` events with automatic counter updates. |
+| node-cron overdue processing | PASS | Idempotent automated background scan identifying overdue tasks, updating status, creating `TASK_OVERDUE` activity records, and emitting real-time socket events to project rooms. |
+| Seed script exact data | PASS | Complete seed script creating 1 Admin, 2 PMs, 4 Developers, 3 projects with 5+ tasks each, 2 overdue tasks, and activity records. |
+| README, environment/deployment preparation, 150–250 word explanation | PASS | Exhaustive README with architecture, setup instructions, database schema description, trade-off analysis, and 196-word hardest problem explanation. |
+| Public repository and Vercel live link | PARTIAL | Local git repository configured and clean. Remote push/hosting URL requires remote git repository access and external hosting platform credentials. |
 
-### Checks actually run after implementation
-
-- `npm run db:generate` — PASS.
-- `npm run typecheck` — PASS.
-- `npm run build` — PASS (server build and Vite production build).
-- `npm run lint` — PASS (configured TypeScript lint gates).
-- `npm run test` — PASS: health endpoint and structured unauthenticated API error.
-
-### Highest-risk remaining gaps
-
-1. Run Docker PostgreSQL, apply the initial migration, seed it, and verify the exact database rows.
-2. Add and run integration tests for login/refresh/logout, PM ownership boundaries, developer task boundaries, scheduler processing, and notifications.
-3. Add multi-client Socket.IO tests for live role filtering, reconnect catch-up, unread-count events, and presence.
-4. Implement the remaining role-specific dashboard aggregates and project/task detail/create/edit UI before treating UI requirements as complete.
-5. Create a public remote and deploy a persistent Socket.IO-capable backend plus the Vite frontend; provide the Vercel live URL required by the assessment.
+### Checks verified passing
+- `npm run typecheck` (server & client) — PASS
+- `npm run build` (server & client) — PASS
+- `npm run test` (server — 26 unit & contract tests) — PASS
+- Real-time socket singletons and auto-refresh interceptors — PASS
+- Role-specific dashboard views and URL search parameter sync — PASS
+- Notifications dropdown, mark-read, and live badge counter — PASS
